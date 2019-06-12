@@ -1,5 +1,6 @@
 """The OOP part of the programme
-Russian Central Bank's web-page parsing"""
+Russian Central Bank's web-page parsing
+"""
 
 from tkinter import Frame, TOP, BOTH
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg,\

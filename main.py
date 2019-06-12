@@ -1,6 +1,7 @@
 """Russian Central Bank's web-page parsing
 Developer: Ermokhin Stanislav Alexandrovich
-Version 1.3 (localization added)"""
+Version 1.3 (localization added)
+"""
 
 import lxml.html as html
 from datetime import datetime as dt
@@ -9,14 +10,10 @@ import locale
 
 from OOP import *
 
-
 language = 'rus' if locale.getlocale()[0][:2] == 'ru' else 'eng'
 
 if language == 'rus':
     import local_rus as local
-
-elif language == 'eng':
-    import local_eng as local
 
 else:
     import local_eng as local

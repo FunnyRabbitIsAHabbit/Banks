@@ -1,6 +1,6 @@
-"""Russian Central Bank's web-page parsing
-Developer: Ermokhin Stanislav Alexandrovich
-Version 1.2 (updated with GUI)"""
+"""The localization part of the programme
+Russian Central Bank's web-page parsing
+"""
 
 # Localization file (RUS)
 
