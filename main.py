@@ -1,12 +1,25 @@
 """Russian Central Bank's web-page parsing
 Developer: Ermokhin Stanislav Alexandrovich
-Version 1.2 (updated with GUI)"""
+Version 1.3 (localization added)"""
 
 import lxml.html as html
 from datetime import datetime as dt
 from tkinter import Tk, Label, Entry, Button, N, S, W, E
+import locale
 
 from OOP import *
+
+
+language = 'rus' if locale.getlocale()[0][:2] == 'ru' else 'eng'
+
+if language == 'rus':
+    import local_rus as local
+
+elif language == 'eng':
+    import local_eng as local
+
+else:
+    import local_eng as local
 
 
 MAIN_PAGE = 'http://cbr.ru/currency_base/dynamics/?UniDbQuery.Posted=True&UniDbQuery.'
@@ -103,22 +116,12 @@ def dates(fr_date, to_date):
                                currency.upper())
 
     mpl_subplot.suptitle(fr_date + '-' + to_date)
-    mpl_subplot.nice_plot()
+    mpl_subplot.nice_plot('Dates', 'Rates')
     graph_page.add_mpl_figure(mpl_subplot)
 
 
-def all_children(wind):
-    lst = wind.winfo_children()
-
-    for item in lst:
-        if item.winfo_children():
-            lst.extend(item.winfo_children())
-
-    return lst
-
-
 def button_bound(event=None):
-    """Bounding events on Load button"""
+    """Bound events on Load button"""
 
     try:
         graph_page.destroy()
@@ -130,7 +133,7 @@ def button_bound(event=None):
 
 
 def button_bound1(event=None):
-    """Bounding events on Load button"""
+    """Bound events on Exit button"""
 
     root.destroy()
 
@@ -141,15 +144,15 @@ def button_bound1(event=None):
         pass
 
 
-Button(top_frame, width=5, text='LOAD',
+Button(top_frame, width=5, text=local.load_button,
        command=button_bound).grid(row=0, column=3, sticky=N+S+W, rowspan=3)
 
-Button(top_frame, width=5, text='EXIT',
+Button(top_frame, width=5, text=local.exit_button,
        command=button_bound1).grid(row=0, column=0, sticky=N+S+E, rowspan=3)
 
 Label(top_frame,
-      text='Разнице во времени\nследует быть не меньшей, чем одна неделя.').grid(row=2, column=1,
-                                                                                 columnspan=2)
+      text=local.dates_difference_warning).grid(row=2, column=1,
+                                                columnspan=2)
 
 root.bind('<Escape>', button_bound1)
 root.bind('<Return>', button_bound)

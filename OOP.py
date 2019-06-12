@@ -2,7 +2,6 @@
 Russian Central Bank's web-page parsing"""
 
 from tkinter import Frame, TOP, BOTH
-import matplotlib
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg,\
     NavigationToolbar2Tk
 from matplotlib.figure import Figure
@@ -18,12 +17,12 @@ class PlotWindow(Frame):
         self.grid(row=3, columnspan=4)
 
     def unpack(self):
-        """Deletes window with MPL Figure from Tk window"""
+        """Delete window with MPL Figure from Tk window"""
 
         self.destroy()
 
     def add_mpl_figure(self, figure):
-        """Adding MatPlotLib Figure"""
+        """Add MatPlotLib Figure"""
 
         self.mpl_canvas = FigureCanvasTkAgg(figure, self)
         self.mpl_canvas.draw()
@@ -47,14 +46,14 @@ class MPLPlot(Figure):
         self.plot = self.add_subplot(111)
 
     def build_plot(self, plot_x, plot_y, label):
-        """Adds plot on a subplot"""
+        """Add plot on a subplot"""
 
         self.plot.plot(plot_x, plot_y, label=label)
 
-    def nice_plot(self):
-        """Makes plot look nice"""
+    def nice_plot(self, x_label=None, y_label=None):
+        """Make plot look nice"""
 
         self.plot.grid(True)
-        self.plot.set_xlabel('Dates')
-        self.plot.set_ylabel('Rates')
+        self.plot.set_xlabel(x_label)
+        self.plot.set_ylabel(y_label)
         self.plot.legend()
