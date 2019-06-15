@@ -1,12 +1,14 @@
 """Russian Central Bank's web-page parsing
 Developer: Ermokhin Stanislav Alexandrovich
-Version 1.3.1 (cny added)
+Version 1.3.2 (async added)
 """
 
 from datetime import datetime as dt
 from tkinter import Tk, Label, Entry, Button, N, S, W, E
-import lxml.html as html
+import lxml.html as h
 import locale
+import aiohttp
+import asyncio
 
 from OOP import *
 
@@ -29,6 +31,8 @@ CURRENCIES = {'usd': 'R01235', 'eur': 'R01239',
               'aud': 'R01010', 'cad': 'R01350',
               'cny': 'R01375'}
 
+exchange_rates = dict()
+
 root = Tk()
 root.title('Currency exchange rates')
 root.geometry('700x700')
@@ -48,7 +52,7 @@ fr_date.grid(row=1, column=1)
 to_date.grid(row=1, column=2)
 
 
-def mutate_func(lst=None):
+async def mutate_func(lst=None):
     """
     Turn list into dict
 
@@ -75,6 +79,42 @@ def mutate_func(lst=None):
     return new_dict
 
 
+async def fetch(session, url):
+    async with session.get(url) as response:
+        return await response.text()
+
+
+async def wow(url):
+    async with aiohttp.ClientSession() as session:
+        html = await fetch(session, url)
+        html_table = h.document_fromstring(html).xpath('//table[@class="data"]')
+        try:
+            new = [td.text_content().replace(',', '.').split() for td in html_table][0]
+            new = new[new.index('Курс')+1:]
+
+        except IndexError:
+            pass
+
+        return await mutate_func(new)
+
+
+async def exchange_func(fr_date, to_date, currency):
+    """
+
+    :param fr_date:
+    :param to_date:
+    :param currency:
+    :return:
+    """
+
+    global exchange_rates
+
+    url = MAIN_PAGE + CURRENCY_INPUT + CURRENCIES[currency] + \
+          FR_DATE_INPUT + fr_date + TO_DATE_INPUT + to_date
+
+    exchange_rates[currency] = await wow(url)
+
+
 def dates(fr_date, to_date):
     """
     From fr_date to to_date rates
@@ -86,22 +126,8 @@ def dates(fr_date, to_date):
 
     global graph_page
 
-    exchange_rates = {}
-
     for currency in CURRENCIES:
-        html_table = html.parse(MAIN_PAGE +
-                                CURRENCY_INPUT + CURRENCIES[currency] +
-                                FR_DATE_INPUT + fr_date + TO_DATE_INPUT +
-                                to_date).xpath('//table[@class="data"]')
-        try:
-            new = [td.text_content().replace(',', '.').split() for td in html_table][0]
-            new = new[new.index('Курс')+1:]
-            new_dict_for_currency = mutate_func(new)
-
-            exchange_rates[currency] = new_dict_for_currency
-
-        except IndexError:
-            pass
+        asyncio.run(exchange_func(fr_date, to_date, currency))
 
     graph_page = PlotWindow(top_frame)
     mpl_subplot = MPLPlot()
