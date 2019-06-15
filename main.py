@@ -52,7 +52,7 @@ fr_date.grid(row=1, column=1)
 to_date.grid(row=1, column=2)
 
 
-async def mutate_func(html=None):
+def mutate_func(html=None):
     """
     Turn html data into dict
 
@@ -92,7 +92,7 @@ async def wow(url):
     async with aiohttp.ClientSession() as session:
         html = await fetch(session, url)
 
-        return await mutate_func(html)
+        return mutate_func(html)
 
 
 async def exchange_func(fr_date, to_date):
