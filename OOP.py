@@ -55,6 +55,7 @@ class MPLPlot(Figure):
         """Make plot look nice"""
 
         self.plot.grid(True)
-        self.plot.set_xlabel(x_label)
-        self.plot.set_ylabel(y_label)
+        if x_label and y_label:
+            self.plot.set_xlabel(x_label)
+            self.plot.set_ylabel(y_label)
         self.plot.legend()
