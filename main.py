@@ -52,16 +52,20 @@ fr_date.grid(row=1, column=1)
 to_date.grid(row=1, column=2)
 
 
-async def mutate_func(lst=None):
+async def mutate_func(html=None):
     """
-    Turn list into dict
+    Turn html data into dict
 
-    :param lst: list
+    :param html: html
     :return: dict
     """
 
     pass_lst = list()
     new_dict = dict()
+
+    html_table = h.document_fromstring(html).xpath('//table[@class="data"]')
+    new = [td.text_content().replace(',', '.').split() for td in html_table][0]
+    lst = new[new.index('Курс') + 1:]
 
     try:
         for i in range(2, len(lst), 3):
@@ -87,32 +91,26 @@ async def fetch(session, url):
 async def wow(url):
     async with aiohttp.ClientSession() as session:
         html = await fetch(session, url)
-        html_table = h.document_fromstring(html).xpath('//table[@class="data"]')
-        try:
-            new = [td.text_content().replace(',', '.').split() for td in html_table][0]
-            new = new[new.index('Курс')+1:]
 
-        except IndexError:
-            pass
-
-        return await mutate_func(new)
+        return await mutate_func(html)
 
 
-async def exchange_func(fr_date, to_date, currency):
+async def exchange_func(fr_date, to_date):
     """
+    Update 'exchange_rates'
 
-    :param fr_date:
-    :param to_date:
-    :param currency:
-    :return:
+    :param fr_date: str
+    :param to_date: str
+    :return: None
     """
 
     global exchange_rates
 
-    url = MAIN_PAGE + CURRENCY_INPUT + CURRENCIES[currency] + \
-          FR_DATE_INPUT + fr_date + TO_DATE_INPUT + to_date
+    for currency in CURRENCIES:
+        url = MAIN_PAGE + CURRENCY_INPUT + CURRENCIES[currency] + \
+              FR_DATE_INPUT + fr_date + TO_DATE_INPUT + to_date
 
-    exchange_rates[currency] = await wow(url)
+        exchange_rates[currency] = await wow(url)
 
 
 def dates(fr_date, to_date):
@@ -126,8 +124,7 @@ def dates(fr_date, to_date):
 
     global graph_page
 
-    for currency in CURRENCIES:
-        asyncio.run(exchange_func(fr_date, to_date, currency))
+    asyncio.run(exchange_func(fr_date, to_date))
 
     graph_page = PlotWindow(top_frame)
     mpl_subplot = MPLPlot()
