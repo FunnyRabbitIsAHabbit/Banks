@@ -1,11 +1,12 @@
 """Russian Central Bank's web-page parsing
 Developer: Ermokhin Stanislav Alexandrovich
-Version 1.3 (localization added)
+Version 1.3.1 (cny added)
 """
 
-import lxml.html as html
+
 from datetime import datetime as dt
 from tkinter import Tk, Label, Entry, Button, N, S, W, E
+import lxml.html as html
 import locale
 
 from OOP import *
@@ -29,16 +30,15 @@ DEFAULT_to_date = '31/01/2019'
 
 months = ['01', '02', '03', '04', '05', '06',
           '07', '08', '09', '10', '11', '12']
+
 days_on_month = {'01': 31, '02': 28, '03': 31, '04': 30,
                  '05': 31, '06': 30, '07': 31, '08': 31,
                  '09': 30, '10': 31, '11': 30, '12': 31}
 
 CURRENCIES = {'usd': 'R01235', 'eur': 'R01239',
               'gbp': 'R01035', 'chf': 'R01775',
-              'aud': 'R01010', 'cad': 'R01350'}
-
-# CURRENCIES['cny'] = 'R01375'
-# 'cny' does not work properly on larger time scales, though
+              'aud': 'R01010', 'cad': 'R01350',
+              'cny': 'R01375'}
 
 root = Tk()
 root.title('Currency exchange rates')
@@ -50,8 +50,8 @@ top_frame.pack()
 Label(top_frame, text='From date: ').grid(row=0, column=1)
 Label(top_frame, text='To date: ').grid(row=0, column=2)
 
-to_date = Entry(top_frame)
 fr_date = Entry(top_frame)
+to_date = Entry(top_frame)
 
 fr_date.insert(0, DEFAULT_fr_date)
 to_date.insert(0, DEFAULT_to_date)
@@ -59,8 +59,41 @@ fr_date.grid(row=1, column=1)
 to_date.grid(row=1, column=2)
 
 
+def mutate_func(lst=None):
+    """
+    Turn list into dict
+
+    :param lst: list
+    :return: dict
+    """
+
+    pass_lst = list()
+    new_dict = dict()
+
+    try:
+        for i in range(2, len(lst), 3):
+            pass_lst.append((dt.date(dt.strptime(lst[i - 2],
+                                                 '%d.%m.%Y')),
+                             float(lst[i-1]),
+                             float(lst[i])))
+
+        for tup in pass_lst:
+            new_dict[tup[0]] = tup[2]/tup[1]
+
+    except ValueError:
+        print('ValueError, returning empty dict')
+
+    return new_dict
+
+
 def dates(fr_date, to_date):
-    """From fr_date to to_date rates"""
+    """
+    From fr_date to to_date rates
+
+    :param fr_date: str
+    :param to_date: str
+    :return: None
+    """
 
     global graph_page
 
@@ -74,31 +107,9 @@ def dates(fr_date, to_date):
         try:
             new = [td.text_content().replace(',', '.').split() for td in html_table][0]
             new = new[new.index('Курс')+1:]
+            new_dict_for_currency = mutate_func(new)
 
-            if currency == 'cny':
-                while '10' in new:
-                    new.remove('10')
-
-                try:
-                    exchange_rates[currency] = {dt.date(
-                        dt.strptime(new[i - 1], '%d.%m.%Y')): float(new[i])/10
-                                                for i in range(1, len(new), 2)}
-
-                except ValueError:
-                    pass
-
-            else:
-
-                while '1' in new:
-                    new.remove('1')
-
-                try:
-                    exchange_rates[currency] = {dt.date(
-                        dt.strptime(new[i - 1], '%d.%m.%Y')): float(new[i])
-                                                for i in range(1, len(new), 2)}
-
-                except ValueError:
-                    pass
+            exchange_rates[currency] = new_dict_for_currency
 
         except IndexError:
             pass
@@ -117,8 +128,13 @@ def dates(fr_date, to_date):
     graph_page.add_mpl_figure(mpl_subplot)
 
 
-def button_bound(event=None):
-    """Bound events on Load button"""
+def load_button_bound(event=None):
+    """
+    Bound events on Load button
+
+    :param event: Tk event
+    :return: None
+    """
 
     try:
         graph_page.destroy()
@@ -129,8 +145,13 @@ def button_bound(event=None):
     dates(fr_date.get(), to_date.get())
 
 
-def button_bound1(event=None):
-    """Bound events on Exit button"""
+def exit_button_bound(event=None):
+    """
+    Bound events on Exit button
+
+    :param event: Tk event
+    :return: None
+    """
 
     root.destroy()
 
@@ -142,16 +163,16 @@ def button_bound1(event=None):
 
 
 Button(top_frame, width=5, text=local.load_button,
-       command=button_bound).grid(row=0, column=3, sticky=N+S+W, rowspan=3)
+       command=load_button_bound).grid(row=0, column=3, sticky=N+S+W, rowspan=3)
 
 Button(top_frame, width=5, text=local.exit_button,
-       command=button_bound1).grid(row=0, column=0, sticky=N+S+E, rowspan=3)
+       command=exit_button_bound).grid(row=0, column=0, sticky=N+S+E, rowspan=3)
 
 Label(top_frame,
       text=local.dates_difference_warning).grid(row=2, column=1,
                                                 columnspan=2)
 
-root.bind('<Escape>', button_bound1)
-root.bind('<Return>', button_bound)
+root.bind('<Return>', load_button_bound)
+root.bind('<Escape>', exit_button_bound)
 
 root.mainloop()
