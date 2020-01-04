@@ -12,12 +12,16 @@ import asyncio
 
 from OOP import *
 
-language = 'rus' if locale.getlocale()[0][:2] == 'ru' else 'eng'
+try:
+    language = 'rus' if locale.getlocale()[0][:2] == 'ru' else 'eng'
 
-if language == 'rus':
-    import local_rus as local
+    if language == 'rus':
+        import local_rus as local
 
-else:
+    else:
+        import local_eng as local
+
+except ValueError:
     import local_eng as local
 
 MAIN_PAGE = 'http://cbr.ru/currency_base/dynamics/?UniDbQuery.Posted=True&UniDbQuery.'
@@ -28,8 +32,7 @@ DEFAULT_FR_DATE = '31/01/2018'
 DEFAULT_TO_DATE = '31/01/2019'
 CURRENCIES = {'usd': 'R01235', 'eur': 'R01239',
               'gbp': 'R01035', 'chf': 'R01775',
-              'aud': 'R01010', 'cad': 'R01350',
-              'cny': 'R01375'}
+              'aud': 'R01010', 'cad': 'R01350'}
 
 exchange_rates = dict()
 
@@ -174,10 +177,10 @@ def exit_button_bound(event=None):
         pass
 
 
-Button(top_frame, width=5, text=local.load_button,
+Button(top_frame, width=10, text=local.load_button,
        command=load_button_bound).grid(row=0, column=3, sticky=N+S+W, rowspan=3)
 
-Button(top_frame, width=5, text=local.exit_button,
+Button(top_frame, width=10, text=local.exit_button,
        command=exit_button_bound).grid(row=0, column=0, sticky=N+S+E, rowspan=3)
 
 Label(top_frame,
