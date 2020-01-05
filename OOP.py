@@ -11,21 +11,34 @@ from matplotlib.figure import Figure
 
 
 class PlotWindow(Frame):
-    """A MatPlotLib window"""
+    """
+    A MatPlotLib window
+    """
 
     def __init__(self, window):
-        """Class constructor"""
+        """
+        Class constructor
+
+        :param window: mpl window
+        """
 
         Frame.__init__(self, window)
-        self.grid(row=3, columnspan=4)
+        self.grid(row=3, columnspan=5)
 
     def unpack(self):
-        """Delete window with MPL Figure from Tk window"""
+        """
+        Delete window with MPL Figure from Tk window
+        """
 
         self.destroy()
 
     def add_mpl_figure(self, figure):
-        """Add MatPlotLib Figure"""
+        """
+        Add MatPlotLib Figure
+
+        :param figure: mpl figure
+        :return: None
+        """
 
         self.mpl_canvas = FigureCanvasTkAgg(figure, self)
         self.mpl_canvas.draw()
@@ -40,21 +53,38 @@ class PlotWindow(Frame):
 
 
 class MPLPlot(Figure):
-    """A MatPlotLib figure"""
+    """
+    A MatPlotLib figure
+    """
 
     def __init__(self):
-        """Class constructor"""
+        """
+        Class constructor
+        """
 
         Figure.__init__(self, dpi=100)
         self.plot = self.add_subplot(111)
 
     def build_plot(self, plot_x, plot_y, label):
-        """Add plot on a subplot"""
+        """
+        Add plot on a subplot
+
+        :param plot_x: tuple of x_data
+        :param plot_y: tuple of y_data
+        :param label: label
+        :return:
+        """
 
         self.plot.plot(plot_x, plot_y, label=label)
 
     def nice_plot(self, x_label=None, y_label=None):
-        """Make plot look nice"""
+        """
+        Make plot look nice
+
+        :param x_label: str
+        :param y_label: str
+        :return: None
+        """
 
         self.plot.grid(True)
         if x_label and y_label:

@@ -1,18 +1,21 @@
 """
 Russian Central Bank's web-page parsing
 Developer: Stanislav Alexandrovich Ermokhin
-Version 1.3.2 (async added)
+Version 1.3.3 (data export added)
 
 """
 
 from datetime import datetime as dt
-from tkinter import Tk, Label, Entry, Button, N, S, W, E
+from tkinter import Tk, Label, Entry, Button, N, S, W, E, SUNKEN, RAISED
 import lxml.html as h
 import locale
 import aiohttp
 import asyncio
+import pandas as pd
 
 from OOP import *
+from pandas.plotting import register_matplotlib_converters
+register_matplotlib_converters()
 
 try:
     language = 'rus' if locale.getlocale()[0][:2] == 'ru' else 'eng'
@@ -103,12 +106,12 @@ async def wow(url):
         return mutate_func(html)
 
 
-async def exchange_func(fr_date, to_date):
+async def exchange_func(fr_date_local, to_date_local):
     """
     Update 'exchange_rates'
 
-    :param fr_date: str
-    :param to_date: str
+    :param fr_date_local: str
+    :param to_date_local: str
     :return: None
     """
 
@@ -116,34 +119,34 @@ async def exchange_func(fr_date, to_date):
 
     for currency in CURRENCIES:
         url = MAIN_PAGE + CURRENCY_INPUT + CURRENCIES[currency] + \
-              FR_DATE_INPUT + fr_date + TO_DATE_INPUT + to_date
+              FR_DATE_INPUT + fr_date_local + TO_DATE_INPUT + to_date_local
 
         exchange_rates[currency] = await wow(url)
 
 
-def dates(fr_date, to_date):
+def dates():
     """
     From fr_date to to_date rates
 
-    :param fr_date: str
-    :param to_date: str
     :return: None
     """
 
     global graph_page
 
-    asyncio.run(exchange_func(fr_date, to_date))
+    asyncio.run(exchange_func(fr_date.get(), to_date.get()))
 
     graph_page = PlotWindow(top_frame)
     mpl_subplot = MPLPlot()
 
     for currency in exchange_rates:
-        mpl_subplot.build_plot(([key for key in exchange_rates[currency]]),
-                               ([exchange_rates[currency][key]
-                                 for key in exchange_rates[currency]]),
+        data = sorted([(key, exchange_rates[currency][key])
+                       for key in exchange_rates[currency]],
+                      key=lambda x: x[0])
+        mpl_subplot.build_plot(([item[0] for item in data]),
+                               ([item[1] for item in data]),
                                currency.upper())
 
-    mpl_subplot.suptitle(fr_date + '-' + to_date)
+    mpl_subplot.suptitle(fr_date.get() + '-' + to_date.get())
     mpl_subplot.nice_plot('Dates', 'Rates')
     graph_page.add_mpl_figure(mpl_subplot)
 
@@ -156,13 +159,43 @@ def load_button_bound(event=None):
     :return: None
     """
 
+    load_button.config(relief=SUNKEN)
+
     try:
         graph_page.destroy()
 
     except NameError:
         pass
 
-    dates(fr_date.get(), to_date.get())
+    dates()
+    load_button.config(relief=RAISED)
+
+
+def data_load_button_bound(event=None):
+    """
+    Bound events on Load Data button
+
+    :param event: Tk event
+    :return: None
+    """
+
+    data_load_button.config(relief=SUNKEN)
+    new_filename = '-'.join(fr_date.get().split('/')) + '_' + \
+                   '-'.join(to_date.get().split('/')) + '.xls'
+    asyncio.run(exchange_func(fr_date.get(), to_date.get()))
+
+    with pd.ExcelWriter(path=new_filename) as excel_writer:
+        for currency in exchange_rates:
+            currency_data = [(key, exchange_rates[currency][key])
+                             for key in exchange_rates[currency]]
+            df = pd.DataFrame(data=currency_data,
+                              columns=['Date', 'Rate'])
+            df.sort_values(by=['Date'])
+            df.to_excel(excel_writer=excel_writer,
+                        sheet_name=currency,
+                        index=False)
+
+    data_load_button.config(relief=RAISED)
 
 
 def exit_button_bound(event=None):
@@ -173,6 +206,7 @@ def exit_button_bound(event=None):
     :return: None
     """
 
+    exit_button.config(relief=SUNKEN)
     root.destroy()
 
     try:
@@ -182,13 +216,20 @@ def exit_button_bound(event=None):
         pass
 
 
-Button(top_frame,
-       width=10, text=local.load_button,
-       command=load_button_bound).grid(row=0, column=3, sticky=N+S+W, rowspan=3)
+data_load_button = Button(top_frame,
+                          width=10, text=local.data_load_button,
+                          command=data_load_button_bound)
+data_load_button.grid(row=0, column=4, sticky=N+S+W, rowspan=3)
 
-Button(top_frame,
-       width=10, text=local.exit_button,
-       command=exit_button_bound).grid(row=0, column=0, sticky=N+S+E, rowspan=3)
+load_button = Button(top_frame,
+                     width=10, text=local.load_button,
+                     command=load_button_bound)
+load_button.grid(row=0, column=3, sticky=N+S+W, rowspan=3)
+
+exit_button = Button(top_frame,
+                     width=10, text=local.exit_button,
+                     command=exit_button_bound)
+exit_button.grid(row=0, column=0, sticky=N+S+E, rowspan=3)
 
 Label(top_frame,
       text=local.dates_difference_warning).grid(row=2, column=1,
