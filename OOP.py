@@ -1,5 +1,7 @@
-"""The OOP part of the programme
+"""
+The OOP part of the program
 Russian Central Bank's web-page parsing
+
 """
 
 from tkinter import Frame, TOP, BOTH

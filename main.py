@@ -1,6 +1,8 @@
-"""Russian Central Bank's web-page parsing
-Developer: Ermokhin Stanislav Alexandrovich
+"""
+Russian Central Bank's web-page parsing
+Developer: Stanislav Alexandrovich Ermokhin
 Version 1.3.2 (async added)
+
 """
 
 from datetime import datetime as dt
@@ -39,12 +41,15 @@ exchange_rates = dict()
 root = Tk()
 root.title('Currency exchange rates')
 root.geometry('700x700')
-root.resizable(width=True, height=True)
+root.resizable(width=True,
+               height=True)
 
 top_frame = Frame(root)
 top_frame.pack()
-Label(top_frame, text='From date: ').grid(row=0, column=1)
-Label(top_frame, text='To date: ').grid(row=0, column=2)
+Label(top_frame,
+      text='From date: ').grid(row=0, column=1)
+Label(top_frame,
+      text='To date: ').grid(row=0, column=2)
 
 fr_date = Entry(top_frame)
 to_date = Entry(top_frame)
@@ -177,10 +182,12 @@ def exit_button_bound(event=None):
         pass
 
 
-Button(top_frame, width=10, text=local.load_button,
+Button(top_frame,
+       width=10, text=local.load_button,
        command=load_button_bound).grid(row=0, column=3, sticky=N+S+W, rowspan=3)
 
-Button(top_frame, width=10, text=local.exit_button,
+Button(top_frame,
+       width=10, text=local.exit_button,
        command=exit_button_bound).grid(row=0, column=0, sticky=N+S+E, rowspan=3)
 
 Label(top_frame,

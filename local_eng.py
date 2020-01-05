@@ -1,5 +1,7 @@
-"""The localization part of the programme
+"""
+The localization part of the program
 Russian Central Bank's web-page parsing
+
 """
 
 # Localization file (ENG)
