@@ -1,5 +1,5 @@
 # Banks
-<p>Cool <a href="https://docs.python.org/3.7/library/tkinter.html">Tkinter</a> with embedded <a href="https://matplotlib.org">Matplotlib</a> project.</p>
+<p>Cool <a href="https://docs.python.org/3.7/library/tkinter.html">Tkinter</a> with embedded <a href="https://matplotlib.org">Matplotlib</a> and <a href="https://pandas.pydata.orgproject.">Pandas</a> project.</p>
 
 <p>Pretty straight forward to use: shows you graphs of the default set of currencies that includes
 <ul>
