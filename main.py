@@ -159,6 +159,7 @@ def load_button_bound(event=None):
     :return: None
     """
 
+    global graph_page
     load_button.config(relief=SUNKEN)
 
     try:
