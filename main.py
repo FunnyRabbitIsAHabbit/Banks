@@ -6,6 +6,7 @@ Version 1.3.3 (data export added)
 """
 
 from datetime import datetime as dt
+from operator import itemgetter
 from tkinter import Tk, Label, Entry, Button, N, S, W, E, SUNKEN, RAISED
 import lxml.html as h
 import locale
@@ -141,7 +142,7 @@ def dates():
     for currency in exchange_rates:
         data = sorted([(key, exchange_rates[currency][key])
                        for key in exchange_rates[currency]],
-                      key=lambda x: x[0])
+                      key=itemgetter(0))
         mpl_subplot.build_plot(([item[0] for item in data]),
                                ([item[1] for item in data]),
                                currency.upper())
