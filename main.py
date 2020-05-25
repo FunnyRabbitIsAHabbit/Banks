@@ -1,7 +1,7 @@
 """
 Russian Central Bank's web-page parsing
 Developer: Stanislav Alexandrovich Ermokhin
-Version 1.3.3 (data export added)
+Version 1.3.4 (data export added)
 
 """
 
