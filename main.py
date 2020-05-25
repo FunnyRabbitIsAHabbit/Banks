@@ -8,7 +8,7 @@ Version 1.3.3 (data export added)
 from datetime import datetime as dt
 from operator import itemgetter
 from tkinter import Tk, Label, Entry, Button, N, S, W, E, SUNKEN, RAISED
-import lxml.html as h
+from lxml import etree
 import locale
 import aiohttp
 import asyncio
@@ -30,15 +30,16 @@ try:
 except ValueError:
     import local_eng as local
 
-MAIN_PAGE = 'http://cbr.ru/currency_base/dynamics/?UniDbQuery.Posted=True&UniDbQuery.'
-CURRENCY_INPUT = 'mode=1&UniDbQuery.date_req1=&UniDbQuery\.date_req2=&UniDbQuery.VAL_NM_RQ='
-FR_DATE_INPUT = '&UniDbQuery.FromDate='
-TO_DATE_INPUT = '&UniDbQuery.ToDate='
-DEFAULT_FR_DATE = '31/01/2018'
-DEFAULT_TO_DATE = '31/01/2019'
+MAIN_PAGE = 'http://www.cbr.ru/scripts/XML_dynamic.asp?'
+CURRENCY_INPUT = '&VAL_NM_RQ='
+FR_DATE_INPUT = 'date_req1='
+TO_DATE_INPUT = '&date_req2='
+DEFAULT_FR_DATE = '31.01.2018'
+DEFAULT_TO_DATE = '31.01.2019'
 CURRENCIES = {'usd': 'R01235', 'eur': 'R01239',
               'gbp': 'R01035', 'chf': 'R01775',
               'aud': 'R01010', 'cad': 'R01350'}
+HEADERS = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:45.0) Gecko/20100101 Firefox/45.0'}
 
 exchange_rates = dict()
 
@@ -64,30 +65,28 @@ fr_date.grid(row=1, column=1)
 to_date.grid(row=1, column=2)
 
 
-async def mutate_func(html):
+async def mutate_func(xml):
     """
-    Turn html data into dict
+    Turn xml data into dict
 
-    :param html: html
+    :param xml: xml
     :return: dict
     """
 
-    pass_lst = list()
     new_dict = dict()
 
-    html_table = h.document_fromstring(html).xpath('//table[@class="data"]')
-    new = [td.text_content().replace(',', '.').split() for td in html_table][0]
-    lst = new[new.index('Курс') + 1:]
+    xml = bytes(xml, encoding='windows-1251')
+    tree = etree.fromstring(xml)
+    obj = tree.xpath('//ValCurs')[0]
+    lst = [(obj[i].xpath('//Record[@Date]/@Date')[i],
+            obj[i].xpath('//Record//Nominal')[i].text,
+            obj[i].xpath('//Record//Value')[i].text.replace(',', '.'))
+           for i in range(len(obj))]
 
     try:
-        for i in range(2, len(lst), 3):
-            pass_lst.append((dt.date(dt.strptime(lst[i - 2],
-                                                 '%d.%m.%Y')),
-                             float(lst[i-1]),
-                             float(lst[i])))
-
-        for tup in pass_lst:
-            new_dict[tup[0]] = tup[2]/tup[1]
+        for obj in lst:
+            new_dict[dt.date(dt.strptime(obj[0],
+                                         '%d.%m.%Y'))] = float(obj[2])/float(obj[1])
 
     except ValueError:
         print('ValueError, returning empty dict')
@@ -97,11 +96,11 @@ async def mutate_func(html):
 
 async def fetch(session, url):
     async with session.get(url) as response:
-        return await response.text()
+        return await response.text(encoding='windows-1251')
 
 
 async def wow(url):
-    async with aiohttp.ClientSession() as session:
+    async with aiohttp.ClientSession(headers=HEADERS) as session:
         html = await fetch(session, url)
 
         return await mutate_func(html)
@@ -119,8 +118,8 @@ async def exchange_func(fr_date_local, to_date_local):
     global exchange_rates
 
     for currency in CURRENCIES:
-        url = MAIN_PAGE + CURRENCY_INPUT + CURRENCIES[currency] + \
-              FR_DATE_INPUT + fr_date_local + TO_DATE_INPUT + to_date_local
+        url = MAIN_PAGE + FR_DATE_INPUT + fr_date_local + TO_DATE_INPUT + to_date_local + \
+              CURRENCY_INPUT + CURRENCIES[currency]
 
         exchange_rates[currency] = await wow(url)
 
