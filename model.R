@@ -2,7 +2,7 @@ library(readxl)
 library(forecast)
 library(stats)
 
-name <- '01.01.2017_01.11.2020.xls'
+name <- '31.01.2000_03.11.2020.xlsx'
 
 usd_data <- readxl::read_excel(name,
                                sheet = 'usd')
@@ -16,8 +16,10 @@ dta <- data.frame(date = usd_data$Date,
                   chf = chf_data$Rate)
 print(dta)
 
-for (col in names(dta)[-c(1)]) {
-    fit <- stats::arima(dta[[col]][500:NROW(dta)],
+for (col in names(dta)[-1]) {
+    print(col)
+    print(forecast::ndiffs(dta[[col]], test = 'pp'))
+    fit <- stats::arima(dta[[col]],
                         order = c(10, 1, 10),
                         method = 'ML')
     print(summary(fit))
@@ -25,7 +27,8 @@ for (col in names(dta)[-c(1)]) {
                           lag.max = 100,
                           plot = FALSE),
                type = 'l'))
-    print(plot(forecast::forecast(fit, 7)))
+    fcst_dta <- forecast::forecast(fit, 100)
+    print(plot(fcst_dta))
 }
 
 # USD go up

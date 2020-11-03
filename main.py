@@ -182,7 +182,7 @@ def data_load_button_bound(event=None):
 
     data_load_button.config(relief=SUNKEN)
     new_filename = '-'.join(fr_date.get().split('/')) + '_' + \
-                   '-'.join(to_date.get().split('/')) + '.xls'
+                   '-'.join(to_date.get().split('/')) + '.xlsx'
     asyncio.run(exchange_func(fr_date.get(), to_date.get()))
 
     with pd.ExcelWriter(path=new_filename) as excel_writer:
